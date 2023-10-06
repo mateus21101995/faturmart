@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id            String @id @default(uuid())
+  avatar        String?
+  name          String @unique @db.VarChar(100)
+  email         String @unique @db.VarChar(100)
+  phone         String @db.VarChar(50)
+  nif           String @unique @db.VarChar(50)
+  adress        String @db.VarChar(245)
+  bio           String @db.Text
+  user          User[]
+}
+
+model User {
+  id            String @id @default(uuid())
+  avatar        String?
+  name          String @db.VarChar(200)
+  phone         String @unique @db.VarChar(100)
+  email         String @unique @db.VarChar(100)
+  password      String @db.VarChar(100)
+  store         Store @relation(fields: [storeId], references: [id])
+  storeId       String
+  createAt      DateTime @default(now())
+  updadeAt      DateTime @updatedAt
+  order         Orders[]
+}
+
+model Clients {
+  id            String @id @default(uuid())
+  avatar        String?
+  name          String @db.VarChar(200)
+  phone         String @unique @db.VarChar(100)
+  email         String @unique @db.VarChar(100)
+  adress        String @unique @db.VarChar(100)
+  createAt      DateTime @default(now())
+  updadeAt      DateTime @updatedAt
+  order         Orders[]
+}
+
+model Suppliers {
+  id            String @id @default(uuid())
+  avatar        String?
+  name          String @db.VarChar(200)
+  nif           String @unique @db.VarChar(100)
+  phone         String @unique @db.VarChar(100)
+  email         String @unique @db.VarChar(100)
+  adress        String @unique @db.VarChar(100)
+  info          String @db.Text
+  products      Products[]
+  createAt      DateTime @default(now())
+  updadeAt      DateTime @updatedAt
+}
+
+model Orders {
+  id            String @id @default(uuid())
+  dateorder     DateTime @default(now())
+  status        String @db.VarChar(100) // Status do pedido (aberto, em andamento, entregue)
+  user          User @relation(fields: [userId], references: [id])
+  userId        String
+  client        Clients @relation(fields: [clientId], references: [id])
+  clientId      String
+  orderProducts OrderProducts[]
+}
+
+
+model OrderProducts {
+  id            String @id @default(uuid())
+  order         Orders @relation(fields: [orderId], references: [id])
+  orderId       String
+  product       Products @relation(fields: [productId], references: [id])
+  productId     String
+  qtd           Int
+  price_unit    Decimal
+}
+
+
+model Products {
+  id            String @id @default(uuid())
+  avatar        String?
+  code          String?
+  name          String @db.VarChar(200)
+  price         Decimal
+  stock         Int
+  description   String @db.VarChar(255)
+  category      Category @relation(fields: [categoryId], references: [id])
+  categoryId    String
+  suppliers     Suppliers @relation(fields: [supplierId], references: [id])
+  supplierId    String
+  orderProducts OrderProducts[]
+}
+
+model Category {
+  id            String @id @default(uuid())
+  name          String @db.VarChar(200)
+  products      Products[]
+}
